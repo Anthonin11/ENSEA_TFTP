@@ -32,8 +32,8 @@
 #include <arpa/inet.h>
 
 #define LINE "$ "
-#define GET "gettftp host file"
-#define PUT "puttftp host file"
+#define GET "gettftp"
+#define PUT "puttftp"
 #define BSIZE 1024
 
 void line(){
@@ -53,7 +53,7 @@ int request(char *input, char *command, char *host, char *file){
 		fprintf(stderr,"Invalid input (<command>tftp <host> <file>)\n");
 		return 1;
 	// Check the command
-	} else if (strcmp(command, "gettftp") != 0 && strcmp(command, "puttftp") != 0) {
+	} else if (strcmp(command, GET) != 0 && strcmp(command, PUT) != 0) {
 		fprintf(stderr, "Unknown command (gettftp or puttftp)\n");
 		return 1;
 	}
