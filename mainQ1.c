@@ -21,50 +21,32 @@
  * 
  */
 
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-#define LINE "$ "
-#define GET "gettftp host file"
-#define PUT "puttftp host file"
 #define BSIZE 1024
+#define GET "gettftp"
+#define PUT "puttftp"
 
-void line(){
-	write(STDOUT_FILENO, LINE, strlen(LINE));
-}
-
-void request(char *input, char *command, char *host, char *file){
-    
-    char buffer[BSIZE];
-    // The user command
-	ssize_t usercommand = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
-    // Remove newline and null-terminate
-    buffer[usercommand - 1] = '\0';	
-    
-    // Split input into 3 parts: command, host and file
-	if (sscanf(buffer, "%s %s %s", command, host, file) <3){
-		fprintf(stderr,"Invalid input (<command>tftp <host> <file>)\n");
-	// Check the command
-	} else if (strcmp(command, "gettftp") != 0 && strcmp(command, "puttftp") != 0) {
-		fprintf(stderr, "Unknown command (gettftp or puttftp)\n");
+void requestinfo(char *argv[], char *host, char *file){
+	if( strcmp(argv[1], GET) == 0 || strcmp(argv[1], PUT) == 0){
+		strcpy(host, argv[2]);
+		strcpy(file, argv[3]);
 	}
 }
 
-int main(){
-	while(1){
+
+int main(int argc, char *argv[]){
 		
-		line();
+	char host[BSIZE];
+	char file[BSIZE];
 		
-		char input[BSIZE];
-		char command[BSIZE];
-		char host[BSIZE];
-		char file[BSIZE];
-		request(input, command, host, file); // QUESTION 1
-				
-	}
+	requestinfo(argv,host,file);
+	
+	printf("host: %s\n", host);
+	printf("file: %s\n", file);
+
 	return 0;
+
 }
 
