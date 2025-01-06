@@ -76,7 +76,6 @@ void ipadress(int argc,char *argv[], char *address){
 			// Convert the IP to a string and print it
 			char ipstr[INET6_ADDRSTRLEN];
 			inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-			//printf("  %s: %s\n", ipver, ipstr);
 			
 			if(strcmp(ipver,"IPv4") == 0){
 				strcpy(address,ipstr);
