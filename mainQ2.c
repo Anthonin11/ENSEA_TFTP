@@ -21,58 +21,42 @@
  * 
  */
 
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
-#define LINE "$ "
+
+#define BSIZE 1024
 #define GET "gettftp"
 #define PUT "puttftp"
-#define BSIZE 1024
+#define IPADD "getaddrinfo"
 
-void line(){
-	write(STDOUT_FILENO, LINE, strlen(LINE));
-}
-
-int request(char *input, char *command, char *host, char *file){
-    
-    char buffer[BSIZE];
-    // The user command
-	ssize_t usercommand = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
-    // Remove newline and null-terminate
-    buffer[usercommand - 1] = '\0';	
-    
-    // Split input into 3 parts: command, host and file
-	if (sscanf(buffer, "%s %s %s", command, host, file) <3){
-		fprintf(stderr,"Invalid input (<command>tftp <host> <file>)\n");
-		return 1;
-	// Check the command
-	} else if (strcmp(command, GET) != 0 && strcmp(command, PUT) != 0) {
-		fprintf(stderr, "Unknown command (gettftp or puttftp)\n");
-		return 1;
+void requestinfo(int argc, char *argv[], char *host, char *file){
+	if( (strcmp(argv[1], GET) == 0 || strcmp(argv[1], PUT) == 0) && argc == 4 ){
+		strcpy(host, argv[2]);
+		strcpy(file, argv[3]);
 	}
-	return 0;
 }
 
-void ipadress(const char *host){
+void ipadress(int argc,char *argv[], char *address){
+	
+	if( strcmp(argv[1], IPADD) == 0 && argc == 3){
+
 	struct addrinfo hints = {0};
 	struct addrinfo *res, *p;
 
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-	int status = getaddrinfo(host, NULL, &hints, &res);
+	int status = getaddrinfo(argv[2], NULL, &hints, &res);
     if (status != 0) {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         return;
     } else {
-		printf("IP addresses for %s:\n", host);
 
 		for (p = res; p != NULL; p = p->ai_next) {
 			void *addr;
@@ -92,26 +76,32 @@ void ipadress(const char *host){
 			// Convert the IP to a string and print it
 			char ipstr[INET6_ADDRSTRLEN];
 			inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-			printf("  %s: %s\n", ipver, ipstr);
+			//printf("  %s: %s\n", ipver, ipstr);
+			
+			if(strcmp(ipver,"IPv4") == 0){
+				strcpy(address,ipstr);
+			}
 		}
     
 	}
     freeaddrinfo(res); // Free the linked list
+
+	}
 }
 
-int main(){
-	while(1){
+int main(int argc, char *argv[]){
 		
-		line();
+	char host[BSIZE];
+	char file[BSIZE];
+	char address[INET6_ADDRSTRLEN];
 		
-		char input[BSIZE];
-		char command[BSIZE];
-		char host[BSIZE];
-		char file[BSIZE];
-		
-		if( request(input, command, host, file) ){ continue; } // QUESTION 1
-				
-		ipadress(host);	
-	}
+	requestinfo(argc, argv, host, file);
+	
+	ipadress(argc, argv, address);
+	
+	printf("IP: %s\n", address);
+	
 	return 0;
+
 }
+
